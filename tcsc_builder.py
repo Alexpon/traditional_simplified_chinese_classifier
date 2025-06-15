@@ -86,7 +86,26 @@ class TCSCBuilder:
                     simp.add(s)
         return simp, trad
 
+    def load_set(self, filename) -> Set[str]:
+        s = set()
+        if os.path.exists(filename):
+            with open(filename, 'r', encoding='utf-8') as f:
+                for line in f:
+                    ch = line.strip()
+                    if ch:
+                        s.add(ch)
+        return s
+
     def build_sets(self) -> Tuple[Set[str], Set[str], Set[str]]:
+        map_dir = 'map'
+        only_simp_path = os.path.join(map_dir, 'only_simp.txt')
+        only_trad_path = os.path.join(map_dir, 'only_trad.txt')
+        both_path = os.path.join(map_dir, 'both.txt')
+        if all(os.path.exists(p) for p in [only_simp_path, only_trad_path, both_path]):
+            only_simp = self.load_set(only_simp_path)
+            only_trad = self.load_set(only_trad_path)
+            both = self.load_set(both_path)
+            return only_simp, only_trad, both
         simp1, trad1 = self.load_unihan_variants(self.UNI_LOCAL)
         simp2, trad2 = self.load_opencc_diff(self.OPENCC_DICT_TARGET)
         only_simp = (simp1 | simp2) - (trad1 | trad2)
