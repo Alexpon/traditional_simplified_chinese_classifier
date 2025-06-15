@@ -20,11 +20,12 @@ if __name__ == '__main__':
     #tcsc.update_and_save()
     only_simp, only_trad, _ = tcsc.build_sets()
     text = input('輸入要判斷的文字：')
-    for ch, tag in tag_text(text, only_simp, only_trad):
+    tagged = tag_text(text, only_simp, only_trad)
+    for ch, tag in tagged:
         print(f'{ch}\t{tag}')
-        
+    
     print('統計結果：')
-    count_t = sum(1 for _, tag in tag_text(text, only_simp, only_trad) if tag == 'T')
-    count_s = sum(1 for _, tag in tag_text(text, only_simp, only_trad) if tag == 'S')
-    count_b = sum(1 for _, tag in tag_text(text, only_simp, only_trad) if tag == 'B')
+    count_t = sum(1 for _, tag in tagged if tag == 'T')
+    count_s = sum(1 for _, tag in tagged if tag == 'S')
+    count_b = sum(1 for _, tag in tagged if tag == 'B')
     print(f'總計：T={count_t}, S={count_s}, B={count_b}')
