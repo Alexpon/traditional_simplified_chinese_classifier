@@ -1,6 +1,7 @@
 import sys
 from typing import Set, Tuple, List
 from tcsc_builder import TCSCBuilder
+from opencc import OpenCC
 
 # 新增：讀取標點符號清單
 import os
@@ -9,7 +10,7 @@ def load_punctuation(path: str) -> Set[str]:
     with open(path, encoding='utf-8') as f:
         return set(line.strip() for line in f if line.strip())
 
-def tag_text(text: str,
+def analyze_with_mapping_table(text: str,
              only_simp: Set[str],
              only_trad: Set[str],
              punctuation: Set[str]) -> List[Tuple[str, str]]:
@@ -27,6 +28,26 @@ def tag_text(text: str,
             labels.append((ch, 'B'))
     return labels
 
+def analyze_with_opencc(text, only_trad, punctuation):
+    """
+    用 opencc 將 text 轉為繁體，逐字比對，計算簡體、繁體、標點數量，並回傳簡體字清單
+    """
+    cc = OpenCC('s2t')
+    text_trad = cc.convert(text)
+    counts = {'T': 0, 'S': 0, 'P': 0}
+    simp_chars = []
+    for c_ori, c_trad in zip(text, text_trad):
+        if c_ori in punctuation:
+            counts['P'] += 1
+        elif c_ori == c_trad:
+            if c_ori in only_trad:
+                counts['T'] += 1
+        else:
+            counts['S'] += 1
+            if c_ori not in punctuation:
+                simp_chars.append(c_ori)
+    return counts, simp_chars
+
 if __name__ == '__main__':
     tcsc = TCSCBuilder()
     #tcsc.update_and_save()
@@ -35,7 +56,7 @@ if __name__ == '__main__':
     punct_path = os.path.join(os.path.dirname(__file__), 'map', 'punctuation.txt')
     punctuation = load_punctuation(punct_path)
     text = input('輸入要判斷的文字：')
-    tagged = tag_text(text, only_simp, only_trad, punctuation)
+    tagged = analyze_with_mapping_table(text, only_simp, only_trad, punctuation)
     for ch, tag in tagged:
         print(f'{ch}\t{tag}')
     
