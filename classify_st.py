@@ -1,5 +1,6 @@
 import sys
 from typing import Set, Tuple, List
+from tcsc_builder import TCSCBuilder
 
 def tag_text(text: str,
              only_simp: Set[str],
@@ -14,13 +15,16 @@ def tag_text(text: str,
             labels.append((ch, 'B'))
     return labels
 
-def load_set(filename: str) -> Set[str]:
-    with open(filename, encoding='utf-8') as f:
-        return set(line.strip() for line in f if line.strip())
-
 if __name__ == '__main__':
-    only_simp = load_set('map/only_simp.txt')
-    only_trad = load_set('map/only_trad.txt')
+    tcsc = TCSCBuilder()
+    #tcsc.update_and_save()
+    only_simp, only_trad, _ = tcsc.build_sets()
     text = input('輸入要判斷的文字：')
     for ch, tag in tag_text(text, only_simp, only_trad):
         print(f'{ch}\t{tag}')
+        
+    print('統計結果：')
+    count_t = sum(1 for _, tag in tag_text(text, only_simp, only_trad) if tag == 'T')
+    count_s = sum(1 for _, tag in tag_text(text, only_simp, only_trad) if tag == 'S')
+    count_b = sum(1 for _, tag in tag_text(text, only_simp, only_trad) if tag == 'B')
+    print(f'總計：T={count_t}, S={count_s}, B={count_b}')
